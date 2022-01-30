@@ -20,7 +20,7 @@ app.post("/create-tenant", async (req, res) => {
     table.string("email").unique();
   });
 
-  res.send("Tenant Created");
+  res.send("Tenant Created !!");
 });
 
 app.post("/create-user", async (req, res) => {
