@@ -30,7 +30,7 @@ app.post("/create-user", async (req, res) => {
 
   await knex(`${subdomain}_users`).insert({
     first_name: firstName,
-    lastName: lastName,
+    last_name: lastName,
     email,
   });
 
