@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"context"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 )
@@ -18,16 +19,22 @@ func main() {
 	//router setup
 	router := gin.Default()
 
-	redisDB := redis.NewClient(&redis.Options{
+	redisInstance := redis.NewClient(&redis.Options{
 		Addr: "localhost:6379",
 	})
 
-	// Add a Key
-	err := redisDB.Set(ctx, "topg", "Andrew Tate", 0).Err()
+	// Setting a Key
+	err := redisInstance.Set(ctx, "topg", "Andrew Tate", 0).Err()
+    if err != nil {
+        panic(err)
+    }
+	// Getting a Key
+	val, err := redisInstance.Get(ctx, "ming").Result()
     if err != nil {
         panic(err)
     }
 
+	fmt.Println(val)
 	//routes
 	router.GET("/books", getBooks)
 
