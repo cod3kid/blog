@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"time"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
@@ -17,7 +18,10 @@ type Post struct {
     Body    string `json:"body"`
 }
 
-func getBooks(c *gin.Context) {
+func getPosts(c *gin.Context) {
+	val, err := redisInstance.Get(ctx, "posts").Result()
+    if err != nil {
+	// Calling the API
 	res, err := http.Get("https://jsonplaceholder.typicode.com/posts")
  
 	defer res.Body.Close()
@@ -26,14 +30,20 @@ func getBooks(c *gin.Context) {
 		return 
 	}
 	
+	// Parsing the JSON
 	var parsedJSONObject []Post
 	json.Unmarshal(body, &parsedJSONObject)
 
-	if err != nil {
-		fmt.Println(err)
-		return 
-	}
-	c.IndentedJSON(http.StatusOK,parsedJSONObject);
+	// Setting the key
+	redisErr := redisInstance.Set(ctx, "posts", body, 20*time.Second).Err()
+    if redisErr != nil {
+     	panic(redisErr)
+    }
+	c.IndentedJSON(http.StatusOK,parsedJSONObject);	
+    }
+
+	fmt.Printf(val)
+	c.IndentedJSON(http.StatusOK, val);
 }
 
 var ctx = context.Background()
@@ -45,19 +55,7 @@ var redisInstance = redis.NewClient(&redis.Options{
 func main() {
 	router := gin.Default()
 
-	err := redisInstance.Set(ctx, "topg", "Andrew Tate", 0).Err()
-    if err != nil {
-        panic(err)
-    }
-
-	val, err := redisInstance.Get(ctx, "ming").Result()
-    if err != nil {
-        panic(err)
-    }
-
-	fmt.Println(val)
-
-	router.GET("/books", getBooks)
+	router.GET("/posts", getPosts)
 
 	router.Run(":8000")
 }
